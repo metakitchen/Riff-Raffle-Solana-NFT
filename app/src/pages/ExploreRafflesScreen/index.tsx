@@ -10,6 +10,7 @@ import { Raffle } from '../../lib/types';
 import { useViewport } from '../../hooks/useViewport';
 import FilterBar from './components/FilterBar';
 import topLogo from '../../assets/topLogo.gif';
+import floateesLogo from '../../assets/discord-logo.svg'
 
 const ExploreRafflesScreen: FC = () => {
   console.log(process.env.NODE_ENV);

@@ -9,6 +9,7 @@ import { Dispenser as DispenserIdl } from '../lib/idl/dispenser';
 import DraffleJson from '../lib/idl/draffle.json';
 import DispenserJson from '../lib/idl/dispenser.json';
 import { DISPENSER_PROGRAM_ID, DRAFFLE_PROGRAM_ID } from '../config/programIds';
+import { PublicKey } from '@solana/web3.js';
 
 //@ts-ignore
 export const ProgramApisContext = createContext<{
@@ -27,6 +28,9 @@ export type DraffleTypes = AnchorTypes<
 type DraffleAccounts = DraffleTypes['Accounts'];
 export type RaffleDataRaw = DraffleAccounts['raffle'];
 export type EntrantsDataRaw = DraffleAccounts['entrants'];
+export type EntrantsData = EntrantsDataRaw & {
+  entrants: PublicKey[];
+};
 export type DraffleProgram = DraffleTypes['Program'];
 
 export type DispenserTypes = AnchorTypes<

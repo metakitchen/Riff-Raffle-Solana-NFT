@@ -64,7 +64,8 @@
           "name": "maxEntrants",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "addPrize",
@@ -119,7 +120,8 @@
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTickets",
@@ -170,7 +172,8 @@
           "name": "amount",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "revealWinners",
@@ -186,7 +189,8 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "claimPrize",
@@ -241,7 +245,8 @@
           "name": "ticketIndex",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "collectProceeds",
@@ -272,7 +277,8 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "closeEntrants",
@@ -293,7 +299,8 @@
           "isSigner": true
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     }
   ],
   "accounts": [
@@ -352,15 +359,6 @@
           {
             "name": "max",
             "type": "u32"
-          },
-          {
-            "name": "entrants",
-            "type": {
-              "array": [
-                "publicKey",
-                1000
-              ]
-            }
           }
         ]
       }
@@ -369,8 +367,8 @@
   "errors": [
     {
       "code": 6000,
-      "name": "MaxEntrantsTooLarge",
-      "msg": "Max entrants is too large"
+      "name": "EntrantsAccountTooSmallForMaxEntrants",
+      "msg": "Entrants account too small for max entrants"
     },
     {
       "code": 6001,

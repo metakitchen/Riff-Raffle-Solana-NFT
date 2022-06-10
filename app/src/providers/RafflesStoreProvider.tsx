@@ -10,12 +10,13 @@ import { Connection, PublicKey } from '@solana/web3.js';
 
 import {
   DraffleProgram,
-  EntrantsDataRaw,
+  EntrantsData,
   RaffleDataRaw,
 } from './ProgramApisProvider';
 import { useProgramApis } from '../hooks/useProgramApis';
 import { Entrant, Raffle, RaffleMetaData } from '../lib/types';
 import {
+  deserializeEntrantsData,
   fetchPrizes,
   fetchProceedsAccount,
   getRaffleProgramAccounts,
@@ -33,8 +34,75 @@ export interface RafflesStore {
   fetching: boolean;
 }
 
-// @ts-ignore
-export const RafflesStoreContext = createContext<RafflesStore>();
+const getAssociatedRaffleData = async (
+  raffleRaw: ProgramAccount<RaffleDataRaw>,
+  raffleMetaData: RaffleMetaData,
+  draffleClient: DraffleProgram,
+  connection: Connection,
+  entrantsData?: EntrantsData
+): Promise<Raffle> => {
+  const proceedsAccount = await fetchProceedsAccount(
+    raffleRaw.publicKey,
+    draffleClient,
+    connection
+  );
+  let entrants = new Map<string, Entrant>();
+  if (!entrantsData) {
+    try {
+      const entrantsAccountInfo = await connection.getAccountInfo(
+        raffleRaw.account.entrants
+      );
+      if (!entrantsAccountInfo)
+        throw new Error('Cannot find entrants account info');
+      entrantsData = deserializeEntrantsData(
+        draffleClient,
+        entrantsAccountInfo.data
+      );
+    } catch {
+      // TODO: Merge ended raffle data stored off-chain here
+      console.log(`Raffle ${raffleRaw.publicKey} entrants account is closed`);
+
+      entrantsData = {
+        max: 0,
+        total: 0,
+        entrants: [],
+      };
+    }
+  }
+
+  entrants = toEntrantsProcessed(entrantsData);
+
+    const prizes = await fetchPrizes(
+      raffleRaw.publicKey,
+      draffleClient,
+      raffleRaw.account.totalPrizes
+    );
+
+  const endTimestamp = new Date(
+    raffleRaw.account.endTimestamp.toNumber() * 1000
+  );
+
+  return {
+    publicKey: raffleRaw.publicKey,
+    metadata: raffleMetaData,
+    endTimestamp,
+    entrantsCap: entrantsData.max,
+    entrants,
+    entrantsRaw: entrantsData.entrants,
+    totalTickets: entrantsData.total,
+    entrantsAccountAddress: raffleRaw.account.entrants,
+    randomness: raffleRaw.account.randomness as number[],
+    prizes,
+    proceeds: {
+      address: proceedsAccount.address,
+      ticketPrice: raffleRaw.account.ticketPrice,
+      mint: proceedsAccount.mintInfo,
+    },
+    isEnded: endTimestamp < new Date(),
+  };
+};
+
+export const RafflesStoreContext = createContext<RafflesStore>({} as any);
 
 const RafflesStoreProvider: FC = ({ children = null as any }) => {
   const { connection } = useConnection();
@@ -45,81 +113,14 @@ const RafflesStoreProvider: FC = ({ children = null as any }) => {
     new Map<string, Raffle>()
   );
 
-  const getAssociatedRaffleData = async (
-    raffleRaw: ProgramAccount<RaffleDataRaw>,
-    raffleMetaData: RaffleMetaData,
-    draffleClient: DraffleProgram,
-    connection: Connection,
-    entrantsDataRaw?: EntrantsDataRaw
-  ): Promise<Raffle> => {
-    const proceedsAccount = await fetchProceedsAccount(
-      raffleRaw.publicKey,
-      draffleClient,
-      connection
-    );
-    let entrants = new Map<string, Entrant>();
-    if (!entrantsDataRaw) {
-      try {
-        entrantsDataRaw = await draffleClient.account.entrants.fetch(
-          raffleRaw.account.entrants
-        );
-      } catch {
-        // TODO: Merge ended raffle data stored off-chain here
-        console.log(`Raffle ${raffleRaw.publicKey} entrants account is closed`);
-
-        entrantsDataRaw = {
-          entrants: [],
-          max: 0,
-          total: 0,
-        };
-      }
-    }
-
-    entrants = toEntrantsProcessed(entrantsDataRaw);
-
-    const prizes = await fetchPrizes(
-      raffleRaw.publicKey,
-      draffleClient,
-      raffleRaw.account.totalPrizes
-    );
-
-    const endTimestamp = new Date(
-      raffleRaw.account.endTimestamp.toNumber() * 1000
-    );
-
-    return {
-      publicKey: raffleRaw.publicKey,
-      metadata: raffleMetaData,
-      endTimestamp,
-      entrantsCap: entrantsDataRaw.max,
-      entrants,
-      entrantsRaw: entrantsDataRaw.entrants,
-      totalTickets: entrantsDataRaw.total,
-      entrantsAccountAddress: raffleRaw.account.entrants,
-      randomness: raffleRaw.account.randomness as number[],
-      prizes,
-      proceeds: {
-        address: proceedsAccount.address,
-        ticketPrice: raffleRaw.account.ticketPrice,
-        mint: proceedsAccount.mintInfo,
-      },
-      isEnded: endTimestamp < new Date(),
-    };
-  };
-
   const fetchAllRaffles = useCallback(
     async (showAll: boolean = false) => {
       // LOOK HERE
       setFetching(true);
-      let raffleDataRawProgramAccounts: ProgramAccount<RaffleDataRaw>[] = [];
-      let entrantsDataRawProgramAccounts: ProgramAccount<EntrantsDataRaw>[] =
-        [];
       try {
-        [raffleDataRawProgramAccounts, entrantsDataRawProgramAccounts] =
+        let { raffleDataRawProgramAccounts, entrantsDataProgramAccounts } =
           await getRaffleProgramAccounts(draffleClient);
-      } catch (e) {
-        console.log(e);
-      }
+
 
       raffleDataRawProgramAccounts = raffleDataRawProgramAccounts.filter(
         ({ publicKey }) => {
@@ -141,7 +142,7 @@ const RafflesStoreProvider: FC = ({ children = null as any }) => {
               },
               draffleClient,
               connection,
-              entrantsDataRawProgramAccounts.find(({ publicKey }) =>
+              entrantsDataProgramAccounts.find(({ publicKey }) =>
                 publicKey.equals(raffleRaw.account.entrants)
               )?.account
             )
@@ -152,6 +153,9 @@ const RafflesStoreProvider: FC = ({ children = null as any }) => {
         return acc;
       }, new Map<string, Raffle>());
       setRaffles(newRaffles);
+    } catch (e) {
+            console.log(e);
+        }
       setFetching(false);
     },
     [connection, draffleClient]

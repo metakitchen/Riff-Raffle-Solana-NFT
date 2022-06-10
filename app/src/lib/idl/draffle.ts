@@ -64,7 +64,8 @@ export type Draffle = {
           "name": "maxEntrants",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "addPrize",
@@ -119,7 +120,8 @@ export type Draffle = {
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTickets",
@@ -170,7 +172,8 @@ export type Draffle = {
           "name": "amount",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "revealWinners",
@@ -186,7 +189,8 @@ export type Draffle = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "claimPrize",
@@ -241,7 +245,8 @@ export type Draffle = {
           "name": "ticketIndex",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "collectProceeds",
@@ -272,7 +277,8 @@ export type Draffle = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "closeEntrants",
@@ -293,7 +299,8 @@ export type Draffle = {
           "isSigner": true
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     }
   ],
   "accounts": [
@@ -352,15 +359,6 @@ export type Draffle = {
           {
             "name": "max",
             "type": "u32"
-          },
-          {
-            "name": "entrants",
-            "type": {
-              "array": [
-                "publicKey",
-                1000
-              ]
-            }
           }
         ]
       }
@@ -369,8 +367,8 @@ export type Draffle = {
   "errors": [
     {
       "code": 6000,
-      "name": "MaxEntrantsTooLarge",
-      "msg": "Max entrants is too large"
+      "name": "EntrantsAccountTooSmallForMaxEntrants",
+      "msg": "Entrants account too small for max entrants"
     },
     {
       "code": 6001,
@@ -506,7 +504,8 @@ export const IDL: Draffle = {
           "name": "maxEntrants",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "addPrize",
@@ -561,7 +560,8 @@ export const IDL: Draffle = {
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTickets",
@@ -612,7 +612,8 @@ export const IDL: Draffle = {
           "name": "amount",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "revealWinners",
@@ -628,7 +629,8 @@ export const IDL: Draffle = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "claimPrize",
@@ -683,7 +685,8 @@ export const IDL: Draffle = {
           "name": "ticketIndex",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "collectProceeds",
@@ -714,7 +717,8 @@ export const IDL: Draffle = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "closeEntrants",
@@ -735,7 +739,8 @@ export const IDL: Draffle = {
           "isSigner": true
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     }
   ],
   "accounts": [
@@ -794,15 +799,6 @@ export const IDL: Draffle = {
           {
             "name": "max",
             "type": "u32"
-          },
-          {
-            "name": "entrants",
-            "type": {
-              "array": [
-                "publicKey",
-                1000
-              ]
-            }
           }
         ]
       }
@@ -811,8 +807,8 @@ export const IDL: Draffle = {
   "errors": [
     {
       "code": 6000,
-      "name": "MaxEntrantsTooLarge",
-      "msg": "Max entrants is too large"
+      "name": "EntrantsAccountTooSmallForMaxEntrants",
+      "msg": "Entrants account too small for max entrants"
     },
     {
       "code": 6001,
